@@ -1,0 +1,10 @@
+{
+  "alphavantage": {
+    "key": "",
+    "delay": 15
+  },
+  "gtaa": {
+    "top": 3,
+    "symbols": ["SYM1", "SUM2"]
+  }
+}
