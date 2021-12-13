@@ -1,10 +1,17 @@
 {
   "alphavantage": {
     "key": "",
-    "delay": 15
+    "delay": 15,
+    "maxRetries": 10
   },
   "gtaa": {
-    "top": 3,
+    "options": {
+      "interval": "daily",
+      "period": 200,
+      "series": "close",
+      "top": 3,
+      "shift": 0
+    },
     "symbols": ["SYM1", "SUM2"]
   }
 }
