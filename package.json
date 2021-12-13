@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "src/gtaa.ts",
   "license": "MIT",
+  "scripts": {
+    "dev": "ts-node src/gtaa.ts"
+  },
   "devDependencies": {
     "@types/node": "^16.11.12",
     "ts-node": "^10.4.0",
