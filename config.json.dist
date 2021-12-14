@@ -4,14 +4,14 @@
     "delay": 15,
     "maxRetries": 10
   },
+  "sma": {
+    "interval": "daily",
+    "timePeriod": 200,
+    "seriesType": "close",
+  },
   "gtaa": {
-    "options": {
-      "interval": "daily",
-      "period": 200,
-      "series": "close",
-      "top": 3,
-      "shift": 0
-    },
-    "symbols": ["SYM1", "SUM2"]
-  }
+    "top": 3,
+    "shift": 1
+  },
+  "symbols": ["SYM1", "SUM2"]
 }

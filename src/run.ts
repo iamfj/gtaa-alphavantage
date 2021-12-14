@@ -1,22 +1,18 @@
-import { RequestClient } from './alphavantage/requestClient';
-import { DelayedClient } from './util/delayedClient';
-import c from '../config.json';
-import { GTAA } from './gtaa';
+import { AlphaVantageDataSource, Interval, SeriesType } from './dataSource/alphaVantageDataSource';
+import { RetryHandler } from './handler/retryHandler';
+import configFile from '../config.json';
 import { Logger } from 'tslog';
-import { Interval, Series } from './types/alphavantageTypes';
-import { Config } from './types/configTypes';
+import { ConfigInterface } from './interfaces/configInterface';
+import { App } from './app';
 
-const config: Config = {
-  alphavantage: c.alphavantage,
-  gtaa: {
-    options: {
-      interval: <Interval>c.gtaa.options.interval,
-      period: c.gtaa.options.period,
-      series: <Series>c.gtaa.options.series,
-      top: c.gtaa.options.top,
-      shift: c.gtaa.options.shift,
-    },
-    symbols: c.gtaa.symbols,
+const configuration: ConfigInterface = {
+  alphavantage: configFile.alphavantage,
+  gtaa: configFile.gtaa,
+  symbols: configFile.symbols,
+  sma: {
+    ...configFile.sma,
+    interval: <Interval>configFile.sma.interval,
+    seriesType: <SeriesType>configFile.sma.seriesType
   },
 };
 
@@ -25,19 +21,13 @@ const logger: Logger = new Logger({
   displayFunctionName: false,
 });
 
-const requestClient = new RequestClient(config.alphavantage.key);
-const delayedClient = new DelayedClient(logger, config.alphavantage.delay, config.alphavantage.maxRetries);
-const gtaa = new GTAA(logger, requestClient, delayedClient);
+// TODO: Why does the retry handler need the alphavantage specific config??
+const alphaVantageDataSource = new AlphaVantageDataSource(configuration.alphavantage.key);
+const retryHandler = new RetryHandler(logger, configuration.alphavantage.delay, configuration.alphavantage.maxRetries);
 
-gtaa.run(config.gtaa.symbols, config.gtaa.options).then(
-  (calculations) => {
-    logger.info(`You should hold the following symbols next month:`);
-    for (const calculation of calculations) {
-      logger.info(`${calculation.symbol}`);
-    }
-    logger.info(`BYE!`);
-  },
-  (err) => {
-    console.error(err);
-  },
-);
+const app = new App(logger, alphaVantageDataSource, retryHandler);
+app.run(configuration.symbols, configuration.sma, configuration.gtaa).then(() => {
+  logger.info('Bye!');
+}, (err) => {
+  logger.error(err);
+});
