@@ -1,9 +1,11 @@
 export type Interval = '1min' | '5min' | '15min' | '30min' | '60min' | 'daily' | 'weekly' | 'monthly';
 export type Series = 'open' | 'low' | 'high' | 'close';
-export type Response = MonthlyAdjustedTimeSeriesResponse | SMAIndicatorResponse | ErrorResponse;
+export type Response = MonthlyTimeSeriesResponse | SmaTechnicalAnalysisResponse | ErrorResponse;
+
 export type ErrorResponse = {
-  Note: string
-}
+  Note: string;
+};
+
 export type TimeSeriesResponse = {
   'Meta Data': {
     '1. Information': string;
@@ -12,20 +14,20 @@ export type TimeSeriesResponse = {
     '4. Time Zone': string;
   };
 };
-export type MonthlyAdjustedTimeSeriesResponse = TimeSeriesResponse & {
-  'Monthly Adjusted Time Series': {
+
+export type MonthlyTimeSeriesResponse = TimeSeriesResponse & {
+  'Monthly Time Series': {
     [key: string]: {
-      '1. open': number,
-      '2. high': number,
-      '3. low': number,
-      '4. close': number,
-      '5. adjusted close': number,
-      '6. volume': number,
-      '7. devided amount': number
+      '1. open': number;
+      '2. high': number;
+      '3. low': number;
+      '4. close': number;
+      '5. volume': number;
     };
   };
-}
-export type IndicatorResponse = {
+};
+
+export type TechnicalAnalysisResponse = {
   'Meta Data': {
     '1. Symbol': string;
     '2. Indicator': string;
@@ -36,7 +38,8 @@ export type IndicatorResponse = {
     '7. Time Zone': string;
   };
 };
-export type SMAIndicatorResponse = IndicatorResponse & {
+
+export type SmaTechnicalAnalysisResponse = TechnicalAnalysisResponse & {
   'Technical Analysis: SMA': {
     [key: string]: {
       SMA: number;
