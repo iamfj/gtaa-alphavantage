@@ -3,6 +3,7 @@ import { Logger } from 'tslog';
 import { App } from './app';
 import dotenv from 'dotenv';
 import { GtaaOptions } from './evaluator/gtaaEvaluator';
+import NodeCache from 'node-cache';
 
 dotenv.config();
 
@@ -16,12 +17,17 @@ const smaTimePeriod = parseInt(process.env.SMA_TIME_PERIOD ?? '60');
 const smaSeriesType = <SeriesType>process.env.SMA_INTERVAL;
 const symbols = (process.env.SYMBOLS ?? '').split(',');
 
-const logger: Logger = new Logger({
+const cache = new NodeCache({
+  stdTTL: 3600,
+  checkperiod: 300,
+});
+
+const logger = new Logger({
   displayFilePath: 'hidden',
   displayFunctionName: false,
 });
 
-const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, {
+const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, cache, {
   delay: alphaVantageDelay,
   limit: alphaVantageLimit,
 });

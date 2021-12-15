@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import NodeCache from 'node-cache';
 import { DataSource, DataSourceOptions } from './dataSource';
 
 export type Interval = '1min' | '5min' | '15min' | '30min' | '60min' | 'daily' | 'weekly' | 'monthly';
@@ -62,8 +63,8 @@ export type SmaOptions = {
 export class AlphaVantageDataSource extends DataSource<MonthlyTimeSeries, SmaTechnicalAnalysis> {
   private readonly host: string = 'https://www.alphavantage.co';
 
-  public constructor(private readonly key: string, retryOptions: DataSourceOptions) {
-    super(retryOptions);
+  public constructor(private readonly key: string, cache: NodeCache, retryOptions: DataSourceOptions) {
+    super('alphavantage', cache, retryOptions);
   }
 
   protected async fetchMonthlyData(symbol: string): Promise<MonthlyTimeSeries> {
