@@ -56,6 +56,9 @@ export type SmaOptions = {
   seriesType: SeriesType;
 };
 
+/**
+ * @see https://www.alphavantage.co/documentation/
+ */
 export class AlphaVantageDataSource extends DataSource<MonthlyTimeSeries, SmaTechnicalAnalysis> {
   private readonly host: string = 'https://www.alphavantage.co';
 

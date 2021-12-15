@@ -12,6 +12,9 @@ export type GtaaIndicators = {
   profit: number;
 };
 
+/**
+ * @see https://papers.ssrn.com/sol3/papers.cfm?abstract_id=962461
+ */
 export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaIndicators> {
   // TODO: Remove Logger from Evaluator
   public constructor(
