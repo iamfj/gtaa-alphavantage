@@ -66,12 +66,12 @@ export class AlphaVantageDataSource extends DataSource<MonthlyTimeSeries, SmaTec
     super(retryOptions);
   }
 
-  public async fetchMonthlyData(symbol: string): Promise<MonthlyTimeSeries> {
+  protected async fetchMonthlyData(symbol: string): Promise<MonthlyTimeSeries> {
     const url = `${this.host}/query?function=TIME_SERIES_MONTHLY&symbol=${symbol}&apikey=${this.key}&datatype=json`;
     return axios.get(url).then((response) => this.rejectError(response));
   }
 
-  public async fetchSmaData(symbol: string, options: SmaOptions): Promise<SmaTechnicalAnalysis> {
+  protected async fetchSmaData(symbol: string, options: SmaOptions): Promise<SmaTechnicalAnalysis> {
     const url = `${this.host}/query?function=SMA&symbol=${symbol}&interval=${options.interval}&time_period=${options.timePeriod}&series_type=${options.seriesType}&apikey=${this.key}&datatype=json`;
     return axios.get(url).then((response) => this.rejectError(response));
   }
