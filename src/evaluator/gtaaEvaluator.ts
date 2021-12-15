@@ -16,12 +16,7 @@ export type GtaaIndicators = {
  * @see https://papers.ssrn.com/sol3/papers.cfm?abstract_id=962461
  */
 export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaIndicators> {
-  // TODO: Remove Logger from Evaluator
-  public constructor(
-    private readonly symbols: string[],
-    private readonly monthlyData: MonthlyTimeSeries[],
-    private readonly smaData: SmaTechnicalAnalysis[],
-  ) {}
+  public constructor(private readonly symbols: string[], private readonly monthlyData: MonthlyTimeSeries[], private readonly smaData: SmaTechnicalAnalysis[]) {}
 
   public evaluate(options: GtaaOptions): Evaluation<GtaaIndicators>[] {
     let results: Evaluation<GtaaIndicators>[] = [];
