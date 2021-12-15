@@ -1,33 +1,47 @@
-import { AlphaVantageDataSource, Interval, SeriesType } from './dataSource/alphaVantageDataSource';
+import { AlphaVantageDataSource, Interval, SeriesType, SmaOptions } from './dataSource/alphaVantageDataSource';
 import { RetryHandler } from './handler/retryHandler';
-import configFile from '../config.json';
 import { Logger } from 'tslog';
-import { ConfigInterface } from './interfaces/configInterface';
 import { App } from './app';
+import dotenv from 'dotenv';
+import { GtaaOptions } from './evaluator/gtaaEvaluator';
 
-const configuration: ConfigInterface = {
-  alphavantage: configFile.alphavantage,
-  gtaa: configFile.gtaa,
-  symbols: configFile.symbols,
-  sma: {
-    ...configFile.sma,
-    interval: <Interval>configFile.sma.interval,
-    seriesType: <SeriesType>configFile.sma.seriesType
-  },
-};
+dotenv.config();
+
+const alphaVantageKey = process.env.ALPHAVANTAGE_KEY ?? '';
+const retryDelay = parseInt(process.env.RETRY_DELAY ?? '15');
+const retryMax = parseInt(process.env.RETRY_MAX ?? '10');
+const gtaaTop = parseInt(process.env.GTAA_TOP ?? '5');
+const gtaaShift = parseInt(process.env.GTAA_SHIFT ?? '1');
+const smaInterval = <Interval>process.env.SMA_INTERVAL;
+const smaTimePeriod = parseInt(process.env.SMA_TIME_PERIOD ?? '60');
+const smaSeriesType = <SeriesType>process.env.SMA_INTERVAL;
+const symbols = (process.env.SYMBOLS ?? '').split(',');
 
 const logger: Logger = new Logger({
   displayFilePath: 'hidden',
   displayFunctionName: false,
 });
 
-// TODO: Why does the retry handler need the alphavantage specific config??
-const alphaVantageDataSource = new AlphaVantageDataSource(configuration.alphavantage.key);
-const retryHandler = new RetryHandler(logger, configuration.alphavantage.delay, configuration.alphavantage.maxRetries);
+const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey);
+const retryHandler = new RetryHandler(logger, retryDelay, retryMax);
+
+const smaOptions: SmaOptions = {
+  interval: smaInterval,
+  timePeriod: smaTimePeriod,
+  seriesType: smaSeriesType
+}
+
+const gtaaOptions: GtaaOptions = {
+  top: gtaaTop,
+  shift: gtaaShift
+}
 
 const app = new App(logger, alphaVantageDataSource, retryHandler);
-app.run(configuration.symbols, configuration.sma, configuration.gtaa).then(() => {
-  logger.info('Bye!');
-}, (err) => {
-  logger.error(err);
-});
+app.run(symbols, smaOptions, gtaaOptions).then(
+  () => {
+    logger.info('Bye!');
+  },
+  (err) => {
+    logger.error(err);
+  },
+);
