@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { DataSourceInterface } from '../interfaces/dataSourceInterface';
+import { DataSource, DataSourceOptions } from './dataSource';
 
 export type Interval = '1min' | '5min' | '15min' | '30min' | '60min' | 'daily' | 'weekly' | 'monthly';
 export type SeriesType = 'open' | 'low' | 'high' | 'close';
@@ -56,17 +56,19 @@ export type SmaOptions = {
   seriesType: SeriesType;
 };
 
-export class AlphaVantageDataSource implements DataSourceInterface<MonthlyTimeSeries, SmaTechnicalAnalysis, SmaOptions> {
+export class AlphaVantageDataSource extends DataSource<MonthlyTimeSeries, SmaTechnicalAnalysis> {
   private readonly host: string = 'https://www.alphavantage.co';
 
-  public constructor(private readonly key: string) {}
+  public constructor(private readonly key: string, retryOptions: DataSourceOptions) {
+    super(retryOptions);
+  }
 
-  public async getMonthlyData(symbol: string): Promise<MonthlyTimeSeries> {
+  public async fetchMonthlyData(symbol: string): Promise<MonthlyTimeSeries> {
     const url = `${this.host}/query?function=TIME_SERIES_MONTHLY&symbol=${symbol}&apikey=${this.key}&datatype=json`;
     return axios.get(url).then((response) => this.rejectError(response));
   }
 
-  public async getSmaData(symbol: string, options: SmaOptions): Promise<SmaTechnicalAnalysis> {
+  public async fetchSmaData(symbol: string, options: SmaOptions): Promise<SmaTechnicalAnalysis> {
     const url = `${this.host}/query?function=SMA&symbol=${symbol}&interval=${options.interval}&time_period=${options.timePeriod}&series_type=${options.seriesType}&apikey=${this.key}&datatype=json`;
     return axios.get(url).then((response) => this.rejectError(response));
   }

@@ -1,5 +1,4 @@
 import { AlphaVantageDataSource, Interval, SeriesType, SmaOptions } from './dataSource/alphaVantageDataSource';
-import { RetryHandler } from './handler/retryHandler';
 import { Logger } from 'tslog';
 import { App } from './app';
 import dotenv from 'dotenv';
@@ -22,8 +21,10 @@ const logger: Logger = new Logger({
   displayFunctionName: false,
 });
 
-const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey);
-const retryHandler = new RetryHandler(logger, retryDelay, retryMax);
+const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, {
+  delay: retryDelay,
+  limit: retryMax
+});
 
 const smaOptions: SmaOptions = {
   interval: smaInterval,
@@ -36,7 +37,7 @@ const gtaaOptions: GtaaOptions = {
   shift: gtaaShift
 }
 
-const app = new App(logger, alphaVantageDataSource, retryHandler);
+const app = new App(logger, alphaVantageDataSource);
 app.run(symbols, smaOptions, gtaaOptions).then(
   () => {
     logger.info('Bye!');

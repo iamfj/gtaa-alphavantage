@@ -1,10 +1,10 @@
 import { Logger } from "tslog";
-import { AlphaVantageDataSource, MonthlyTimeSeries, SmaOptions, SmaTechnicalAnalysis } from "./dataSource/alphaVantageDataSource";
+import { MonthlyTimeSeries, SmaOptions, SmaTechnicalAnalysis } from "./dataSource/alphaVantageDataSource";
+import { DataSource, DataSourceOptions } from "./dataSource/dataSource";
 import { GtaaEvaluator, GtaaOptions } from "./evaluator/gtaaEvaluator";
-import { RetryHandler } from "./handler/retryHandler";
 
 export class App {
-  public constructor(private readonly logger: Logger, private readonly alphaVantageDataSource: AlphaVantageDataSource, private readonly retryHandler: RetryHandler) {
+  public constructor(private readonly logger: Logger, private readonly dataSource: DataSource<any, any>) {
     this.onRejectCallback = this.onRejectCallback.bind(this);
   }
 
@@ -26,23 +26,23 @@ export class App {
     }
   }
 
-  private onRejectCallback(retry: number, maxRetries: number, delay: number): void {
-    this.logger.info(`Rejected! Waiting ${delay}s [${retry}/${maxRetries}]`);
+  private onRejectCallback(count: number, limit: number, delay: number): void {
+    this.logger.info(`Rejected! Waiting ${delay}s [${count}/${limit}]`);
   }
 
   private async fetchMonthlyData(symbols: string[]): Promise<MonthlyTimeSeries[]> {
     const responses: MonthlyTimeSeries[] = [];
     for (const symbol of symbols) {
-      responses.push(await this.retryHandler.handle(() => this.alphaVantageDataSource.getMonthlyData(symbol), this.onRejectCallback));
+      responses.push(await this.dataSource.getMonthlyData(symbol, this.onRejectCallback));
       this.logger.info(`Fetched monthly data for ${symbol}`);
     }
     return Promise.resolve(responses);
   }
 
-  private async fetchSmaData(symbols: string[], options: SmaOptions): Promise<SmaTechnicalAnalysis[]> {
+  private async fetchSmaData(symbols: string[], smaOptions: SmaOptions): Promise<SmaTechnicalAnalysis[]> {
     const responses: SmaTechnicalAnalysis[] = [];
     for (const symbol of symbols) {
-      responses.push(await this.retryHandler.handle(() => this.alphaVantageDataSource.getSmaData(symbol, options), this.onRejectCallback));
+      responses.push(await this.dataSource.getSmaData(symbol, smaOptions, this.onRejectCallback));
       this.logger.info(`Fetched sma data for ${symbol}`);
     }
     return Promise.resolve(responses);
