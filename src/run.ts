@@ -7,8 +7,8 @@ import { GtaaOptions } from './evaluator/gtaaEvaluator';
 dotenv.config();
 
 const alphaVantageKey = process.env.ALPHAVANTAGE_KEY ?? '';
-const retryDelay = parseInt(process.env.RETRY_DELAY ?? '15');
-const retryMax = parseInt(process.env.RETRY_MAX ?? '10');
+const alphaVantageDelay = parseInt(process.env.ALPHAVANTAGE_DELAY ?? '15');
+const alphaVantageLimit = parseInt(process.env.ALPHAVANTAGE_LIMIT ?? '10');
 const gtaaTop = parseInt(process.env.GTAA_TOP ?? '5');
 const gtaaShift = parseInt(process.env.GTAA_SHIFT ?? '1');
 const smaInterval = <Interval>process.env.SMA_INTERVAL;
@@ -22,8 +22,8 @@ const logger: Logger = new Logger({
 });
 
 const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, {
-  delay: retryDelay,
-  limit: retryMax
+  delay: alphaVantageDelay,
+  limit: alphaVantageLimit
 });
 
 const smaOptions: SmaOptions = {
