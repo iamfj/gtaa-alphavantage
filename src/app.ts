@@ -1,6 +1,6 @@
 import { Logger } from "tslog";
 import { MonthlyTimeSeries, SmaOptions, SmaTechnicalAnalysis } from "./dataSource/alphaVantageDataSource";
-import { DataSource, DataSourceOptions } from "./dataSource/dataSource";
+import { DataSource } from "./dataSource/dataSource";
 import { GtaaEvaluator, GtaaOptions } from "./evaluator/gtaaEvaluator";
 
 export class App {
@@ -12,7 +12,7 @@ export class App {
     const monthlyData = await this.fetchMonthlyData(symbols);
     const smaData = await this.fetchSmaData(symbols, smaOptions);
 
-    const gtaaEvaluator = new GtaaEvaluator(this.logger, symbols, monthlyData, smaData);
+    const gtaaEvaluator = new GtaaEvaluator(symbols, monthlyData, smaData);
     const gtaaEvaluations = gtaaEvaluator.evaluate(gtaaOptions);
     
     if(gtaaEvaluations.length === 0) {

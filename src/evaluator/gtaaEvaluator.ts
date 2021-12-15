@@ -18,7 +18,6 @@ export type GtaaIndicators = {
 export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaIndicators> {
   // TODO: Remove Logger from Evaluator
   public constructor(
-    private readonly logger: Logger,
     private readonly symbols: string[],
     private readonly monthlyData: MonthlyTimeSeries[],
     private readonly smaData: SmaTechnicalAnalysis[],
@@ -37,8 +36,6 @@ export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaIndica
       const close = recentMonthlyData['4. close'];
       const profit = recentMonthlyData['4. close'] - recentMonthlyData['1. open'];
       const sma = this.smaData[i]['Technical Analysis: SMA'][date].SMA;
-
-      this.logger.info(`${symbol}: ${date} | SMA ${sma} | OPEN ${open} | LOW ${low} | HIGH ${high} | CLOSE ${close} | PROFIT ${profit}`);
 
       if (close > sma && profit > 0) {
         results.push({
