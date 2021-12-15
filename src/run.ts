@@ -23,19 +23,19 @@ const logger: Logger = new Logger({
 
 const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, {
   delay: alphaVantageDelay,
-  limit: alphaVantageLimit
+  limit: alphaVantageLimit,
 });
 
 const smaOptions: SmaOptions = {
   interval: smaInterval,
   timePeriod: smaTimePeriod,
-  seriesType: smaSeriesType
-}
+  seriesType: smaSeriesType,
+};
 
 const gtaaOptions: GtaaOptions = {
   top: gtaaTop,
-  shift: gtaaShift
-}
+  shift: gtaaShift,
+};
 
 const app = new App(logger, alphaVantageDataSource);
 app.run(symbols, smaOptions, gtaaOptions).then(
