@@ -1,4 +1,3 @@
-import { Logger } from 'tslog';
 import { MonthlyTimeSeries, SmaTechnicalAnalysis } from '../dataSource/alphaVantageDataSource';
 import { Evaluation, EvaluatorInterface } from '../interfaces/evaluatorInterface';
 
