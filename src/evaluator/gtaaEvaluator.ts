@@ -12,10 +12,15 @@ export type GtaaSymbolData = {
   smaData: SmaData;
 };
 
+export type GtaaProfit = {
+  absolute: number,
+  relative: number
+}
+
 export type GtaaEvaluationData = {
   date: Date;
   monthlyCandle: CandleData;
-  monthlyProfit: number;
+  monthlyProfit: GtaaProfit;
   dailySma: number;
 };
 
@@ -30,10 +35,13 @@ export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaSymbol
       const symbolData = data[symbol];
       const recentUnixDate = parseInt(Object.keys(symbolData.monthlyData).sort((a, b) => parseInt(b) - parseInt(a))[options.shift]);
       const recentMonthlyCandle = symbolData.monthlyData[recentUnixDate];
-      const recentMonthlyProfit = recentMonthlyCandle.close - recentMonthlyCandle.open;
+      const recentMonthlyProfit: GtaaProfit = {
+        absolute: recentMonthlyCandle.close - recentMonthlyCandle.open,
+        relative: (recentMonthlyCandle.close / recentMonthlyCandle.open) - 1
+      };
       const recentDailySma = symbolData.smaData[recentUnixDate];
 
-      if (recentMonthlyCandle.close > recentDailySma && recentMonthlyProfit > 0) {
+      if (recentMonthlyCandle.close > recentDailySma && recentMonthlyProfit.relative > 0) {
         results.push({
           symbol,
           data: {
@@ -47,7 +55,7 @@ export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaSymbol
     }
 
     return results
-      .sort((a, b) => b.data.monthlyProfit - a.data.monthlyProfit)
+      .sort((a, b) => b.data.monthlyProfit.relative - a.data.monthlyProfit.relative)
       .filter((_result, i) => {
         return i < options.top;
       });

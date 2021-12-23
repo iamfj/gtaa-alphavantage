@@ -47,7 +47,12 @@ export class EvaluationTask implements TaskInterface<EvaluationTaskOptions> {
     }
 
     for (const evaluation of evaluations) {
-      this.logger.info(` - ${evaluation.symbol} [Recent Profit ${evaluation.data.monthlyProfit}]`);
+      const formattedProfit = (evaluation.data.monthlyProfit.relative * 100).toLocaleString('en-us', {
+        minimumFractionDigits: 2,
+        minimumIntegerDigits: 2, 
+        useGrouping: false
+      });
+      this.logger.info(` - ${evaluation.symbol} [Profit ${formattedProfit}%]`);
     }
   }
 
