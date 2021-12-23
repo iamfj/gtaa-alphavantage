@@ -19,7 +19,7 @@ export class RetryFetchClient extends FetchClient {
       try {
         return Promise.resolve(await request());
       } catch (err: any) {
-        this.logger.info(`Rejected! Waiting ${this.options.delay}s [${count}/${this.options.limit}]`);
+        this.logger.info(`Request was rejected! Waiting ${this.options.delay}s [${count}/${this.options.limit}]`);
         errors.push(err);
         await new Promise((resolve) => setTimeout(resolve, this.options.delay * 1000));
       }
