@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { ValidationError } from '../core/error/validationError';
 import { IndicatorSourceInterface, SeriesType, SmaData, SmaOptions } from '../core/interfaces/source/indicatorSourceInterface';
 import { MarketData, MarketSourceInterface } from '../core/interfaces/source/marketSourceInterface';
 
@@ -104,7 +105,7 @@ export class AlphaVantageSource implements MarketSourceInterface, IndicatorSourc
 
   private transformSmaOptions(smaOptions: SmaOptions): AlphaVantageSmaOptions {
     if (smaOptions.periods < 1) {
-      throw new Error(`The sma periods should be 1 or greater`);
+      throw new ValidationError(`The sma periods should be 1 or greater`);
     }
 
     const seriesMap: {
@@ -121,7 +122,7 @@ export class AlphaVantageSource implements MarketSourceInterface, IndicatorSourc
     };
 
     if (!Object.keys(seriesMap).includes(smaOptions.series)) {
-      throw new Error(`The sma ${smaOptions.series} series is not supported by the alpha vantage api`);
+      throw new ValidationError(`The sma ${smaOptions.series} series is not supported by the alpha vantage api`);
     }
 
     return {
@@ -132,8 +133,8 @@ export class AlphaVantageSource implements MarketSourceInterface, IndicatorSourc
 
   public async fetchSmaData(symbol: string, options: SmaOptions): Promise<SmaData> {
     try {
-      const transformedOptions = this.transformSmaOptions(options);
-      const url = `${this.host}/query?function=SMA&symbol=${symbol}&interval=${transformedOptions.alphaVantageSeries}&time_period=${transformedOptions.periods}&series_type=${transformedOptions.seriesType}&apikey=${this.key}&datatype=json`;
+      const alphaVantageSmaOptions = this.transformSmaOptions(options);
+      const url = `${this.host}/query?function=SMA&symbol=${symbol}&interval=${alphaVantageSmaOptions.alphaVantageSeries}&time_period=${alphaVantageSmaOptions.periods}&series_type=${alphaVantageSmaOptions.seriesType}&apikey=${this.key}&datatype=json`;
       return Promise.resolve(this.transformSmaDataResponse(await axios.get(url).then((response) => this.catchErrorReponse(response))));
     } catch (err: any) {
       return Promise.reject(err);

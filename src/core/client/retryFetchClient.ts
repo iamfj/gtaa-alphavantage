@@ -1,4 +1,5 @@
 import { Logger } from 'tslog';
+import { ValidationError } from '../error/validationError';
 import { FetchClient } from './fetchClient';
 
 export type RetryFetchCLientOptions = {
@@ -19,8 +20,13 @@ export class RetryFetchClient extends FetchClient {
       try {
         return Promise.resolve(await request());
       } catch (err: any) {
-        this.logger.info(`Request was rejected! Waiting ${this.options.delay}s [${count}/${this.options.limit}]`);
+        // Prevent retry loop if its kind of validation error
+        if(err instanceof ValidationError) {
+          return Promise.reject(err.message);
+        }
+
         errors.push(err);
+        this.logger.info(`Request was rejected! Waiting ${this.options.delay}s [${count}/${this.options.limit}]`);
         await new Promise((resolve) => setTimeout(resolve, this.options.delay * 1000));
       }
     }
