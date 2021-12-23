@@ -25,6 +25,6 @@ export class RetryFetchClient extends FetchClient {
       }
     }
 
-    return Promise.reject(`Could not execute request after ${this.options.limit} retries! Errors: \n\t${errors.join('\n\t')}`);
+    return Promise.reject(`Could not execute request after ${this.options.limit} retries! \n\t${errors.join('\n\t')}`);
   }
 }
