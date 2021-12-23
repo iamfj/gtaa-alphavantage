@@ -1,12 +1,12 @@
 import { Logger } from 'tslog';
 import { SymbolGroupedData } from '../core/interfaces/evaluatorInterface';
 import { ClientInterface } from '../core/interfaces/source/clientInterface';
-import { IndicatorSourceInterface, SmaData } from '../core/interfaces/source/indicatorSourceInterface';
+import { IndicatorSourceInterface, SmaData, SmaOptions } from '../core/interfaces/source/indicatorSourceInterface';
 import { MarketData, MarketSourceInterface } from '../core/interfaces/source/marketSourceInterface';
 import { SourceInterface, TaskInterface } from '../core/interfaces/taskInterface';
 import { GtaaEvaluator, GtaaOptions, GtaaSymbolData } from '../evaluator/gtaaEvaluator';
 
-export type EvaluationTaskOptions<SmaOptions> = {
+export type EvaluationTaskOptions = {
   symbols: string[];
   smaOptions: SmaOptions;
   gtaaOptions: GtaaOptions;
@@ -20,11 +20,11 @@ export type SymbolSmaData = {
   [key: string]: number[]
 }
 
-export class EvaluationTask<SmaOptions> implements TaskInterface<EvaluationTaskOptions<SmaOptions>> {
+export class EvaluationTask implements TaskInterface<EvaluationTaskOptions> {
   public constructor(private readonly logger: Logger, private readonly evaluator: GtaaEvaluator) {}
 
-  public async run(client: ClientInterface, source: SourceInterface, options?: EvaluationTaskOptions<SmaOptions>): Promise<void> {
-    if ((source as MarketSourceInterface).fetchMonthlyData === undefined || (source as IndicatorSourceInterface<SmaOptions>).fetchSmaData === undefined) {
+  public async run(client: ClientInterface, source: SourceInterface, options?: EvaluationTaskOptions): Promise<void> {
+    if ((source as MarketSourceInterface).fetchMonthlyData === undefined || (source as IndicatorSourceInterface).fetchSmaData === undefined) {
       return Promise.reject('Data source does not support market data or indicator apis');
     }
 
@@ -74,7 +74,7 @@ export class EvaluationTask<SmaOptions> implements TaskInterface<EvaluationTaskO
   private async fetchSmaDataForSymbols(symbols: string[], options: SmaOptions, client: ClientInterface, source: SourceInterface): Promise<SymbolGroupedData<SmaData>> {
     const smaData: SymbolGroupedData<SmaData> = {};
     for (const symbol of symbols) {
-      smaData[symbol] = await client.fetch(() => (source as IndicatorSourceInterface<SmaOptions>).fetchSmaData(symbol, options));
+      smaData[symbol] = await client.fetch(() => (source as IndicatorSourceInterface).fetchSmaData(symbol, options));
       this.logger.info(`Fetched ${Object.keys(smaData[symbol]).length} sma data sets for ${symbol}`);
     }
     return Promise.resolve(smaData);
