@@ -1,48 +1,54 @@
-import { MonthlyTimeSeries, SmaTechnicalAnalysis } from '../dataSource/alphaVantageDataSource';
-import { Evaluation, EvaluatorInterface } from '../interfaces/evaluatorInterface';
+import { Evaluation, EvaluatorInterface, SymbolGroupedData } from '../core/interfaces/evaluatorInterface';
+import { CandleData, MarketData } from '../core/interfaces/source/marketSourceInterface';
+import { SmaData } from '../core/interfaces/source/indicatorSourceInterface';
 
 export type GtaaOptions = {
   top: number;
   shift: number;
 };
 
-export type GtaaIndicators = {
-  sma: number;
-  profit: number;
+export type GtaaSymbolData = {
+  monthlyData: MarketData;
+  smaData: SmaData;
+};
+
+export type GtaaEvaluationData = {
+  date: Date;
+  monthlyCandle: CandleData;
+  monthlyProfit: number;
+  dailySma: number;
 };
 
 /**
  * @see https://papers.ssrn.com/sol3/papers.cfm?abstract_id=962461
  */
-export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaIndicators> {
-  public constructor(private readonly symbols: string[], private readonly monthlyData: MonthlyTimeSeries[], private readonly smaData: SmaTechnicalAnalysis[]) {}
+export class GtaaEvaluator implements EvaluatorInterface<GtaaOptions, GtaaSymbolData, GtaaEvaluationData> {
+  public evaluate(options: GtaaOptions, data: SymbolGroupedData<GtaaSymbolData>): Evaluation<GtaaEvaluationData>[] {
+    let results: Evaluation<GtaaEvaluationData>[] = [];
 
-  public evaluate(options: GtaaOptions): Evaluation<GtaaIndicators>[] {
-    let results: Evaluation<GtaaIndicators>[] = [];
+    for (const symbol of Object.keys(data)) {
+      const symbolData = data[symbol];
+      const recentUnixDate = parseInt(Object.keys(symbolData.monthlyData).sort((a, b) => parseInt(b) - parseInt(a))[options.shift]);
+      const recentMonthlyCandle = symbolData.monthlyData[recentUnixDate];
+      const recentMonthlyProfit = recentMonthlyCandle.close - recentMonthlyCandle.open;
+      const recentDailySma = symbolData.smaData[recentUnixDate];
 
-    for (let i = 0; i < this.symbols.length - 1; i++) {
-      const symbol = this.symbols[i];
-      const date = Object.keys(this.monthlyData[i]['Monthly Time Series'])[options.shift];
-      const recentMonthlyData = this.monthlyData[i]['Monthly Time Series'][date];
-      const open = recentMonthlyData['1. open'];
-      const low = recentMonthlyData['3. low'];
-      const high = recentMonthlyData['2. high'];
-      const close = recentMonthlyData['4. close'];
-      const profit = recentMonthlyData['4. close'] - recentMonthlyData['1. open'];
-      const sma = this.smaData[i]['Technical Analysis: SMA'][date].SMA;
-
-      if (close > sma && profit > 0) {
+      if (recentMonthlyCandle.close > recentDailySma && recentMonthlyProfit > 0) {
         results.push({
           symbol,
-          data: { date, open, low, high, close },
-          indicator: { sma, profit },
+          data: {
+            date: new Date(recentUnixDate),
+            monthlyCandle: recentMonthlyCandle,
+            monthlyProfit: recentMonthlyProfit,
+            dailySma: recentDailySma,
+          },
         });
       }
     }
 
     return results
-      .sort((a, b) => a.indicator.profit - b.indicator.profit)
-      .filter((result, i) => {
+      .sort((a, b) => b.data.monthlyProfit - a.data.monthlyProfit)
+      .filter((_result, i) => {
         return i < options.top;
       });
   }

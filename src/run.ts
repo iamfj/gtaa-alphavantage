@@ -1,11 +1,14 @@
-import { AlphaVantageDataSource, Interval, SeriesType, SmaOptions } from './dataSource/alphaVantageDataSource';
+import { AlphaVantageSource, Interval, SeriesType, AlphaVantageSmaOptions } from './source/alphaVantageSource';
 import { Logger } from 'tslog';
 import { App } from './app';
 import dotenv from 'dotenv';
-import { GtaaOptions } from './evaluator/gtaaEvaluator';
+import { GtaaEvaluator, GtaaOptions } from './evaluator/gtaaEvaluator';
+import { RetryFetchClient } from './core/client/retryFetchClient';
+import { EvaluationTask, EvaluationTaskOptions } from './task/evaluationTask';
 
 dotenv.config();
 
+// Defining variables from environment
 const alphaVantageKey = process.env.ALPHAVANTAGE_KEY ?? '';
 const alphaVantageDelay = parseInt(process.env.ALPHAVANTAGE_DELAY ?? '15');
 const alphaVantageLimit = parseInt(process.env.ALPHAVANTAGE_LIMIT ?? '10');
@@ -16,17 +19,20 @@ const smaTimePeriod = parseInt(process.env.SMA_TIME_PERIOD ?? '60');
 const smaSeriesType = <SeriesType>process.env.SMA_INTERVAL;
 const symbols = (process.env.SYMBOLS ?? '').split(',');
 
+// Create class instances
 const logger: Logger = new Logger({
   displayFilePath: 'hidden',
   displayFunctionName: false,
 });
 
-const alphaVantageDataSource = new AlphaVantageDataSource(alphaVantageKey, {
+const client = new RetryFetchClient(logger, {
   delay: alphaVantageDelay,
   limit: alphaVantageLimit,
 });
 
-const smaOptions: SmaOptions = {
+const alphaVantageSource = new AlphaVantageSource(alphaVantageKey);
+
+const smaOptions: AlphaVantageSmaOptions = {
   interval: smaInterval,
   timePeriod: smaTimePeriod,
   seriesType: smaSeriesType,
@@ -37,8 +43,13 @@ const gtaaOptions: GtaaOptions = {
   shift: gtaaShift,
 };
 
-const app = new App(logger, alphaVantageDataSource);
-app.run(symbols, smaOptions, gtaaOptions).then(
+const gtaaEvaluator = new GtaaEvaluator();
+
+const app = new App(client, alphaVantageSource);
+const evaluationTask = new EvaluationTask(logger, gtaaEvaluator);
+const evaluationTaskOptions: EvaluationTaskOptions<AlphaVantageSmaOptions> = { symbols, gtaaOptions, smaOptions };
+
+app.run(evaluationTask, evaluationTaskOptions).then(
   () => {
     logger.info('Bye!');
   },
